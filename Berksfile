@@ -5,6 +5,9 @@ metadata
 cookbook "php"
 cookbook "yum", ">= 3.0.0"
 cookbook "apache2", ">= 1.8.14"
+cookbook "memcached", ">= 1.6.6"
+cookbook "sqlite"
+cookbook "postfix"
 
 cookbook "percona", github: "beyond9/chef-percona"
 cookbook 'b9mysql', github:'beyond9/b9mysql'
