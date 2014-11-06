@@ -3,25 +3,60 @@
 
 Vagrant.configure("2") do |config|
   config.omnibus.chef_version = :latest
-  
   # All Vagrant configuration is done here. The most common configuration
   # options are documented and commented below. For a complete reference,
   # please see the online documentation at vagrantup.com.
 
-  config.vm.hostname = "b9base-berkshelf"
+  config.vm.hostname = "b9centos-berkshelf"
 
   # Every Vagrant virtual environment requires a box to build off of.
-  config.vm.box = "B9Base20140129v1.0.1"
+  config.vm.box = "B9CentOS7"
 
   # The url from where the 'config.vm.box' box will be fetched if it
   # doesn't already exist on the user's system.
-  config.vm.box_url = "https://github.com/beyond9/b9centos/releases/download/1.0/centos65-x86_64-20140129.box"
+  config.vm.box_url = "https://f0fff3908f081cb6461b407be80daf97f07ac418.googledrive.com/host/0BwtuV7VyVTSkUG1PM3pCeDJ4dVE/centos7.box"
 
   # Assign this VM to a host-only network IP, allowing you to access it
   # via the IP. Host-only networks can talk to the host machine as well as
   # any other machines on the same network, but cannot be accessed (through this
   # network interface) by any external networks.
-  config.vm.network :private_network, ip: "33.33.33.30"
+  config.vm.network :private_network, ip: "172.17.8.102"
+  
+  config.vbguest.auto_update = true
+
+  # do NOT download the iso file from a webserver
+  config.vbguest.no_remote = true
+
+  # Create a public network, which generally matched to bridged network.
+  # Bridged networks make the machine appear as another physical device on
+  # your network.
+
+  # config.vm.network :public_network
+
+  # Create a forwarded port mapping which allows access to a specific port
+  # within the machine from a port on the host machine. In the example below,
+  # accessing "localhost:8080" will access port 80 on the guest machine.
+
+  # Share an additional folder to the guest VM. The first argument is
+  # the path on the host to the actual folder. The second argument is
+  # the path on the guest to mount the folder. And the optional third
+  # argument is a set of non-required options.
+  # config.vm.synced_folder "../data", "/vagrant_data"
+
+  # Provider-specific configuration so you can fine-tune various
+  # backing providers for Vagrant. These expose provider-specific options.
+  # Example for VirtualBox:
+  #
+  # config.vm.provider :virtualbox do |vb|
+  #   # Don't boot with headless mode
+  #   vb.gui = true
+  #
+  #   # Use VBoxManage to customize the VM. For example to change memory:
+  #   vb.customize ["modifyvm", :id, "--memory", "1024"]
+  # end
+  #
+  # View the documentation for the provider you're using for more
+  # information on available options.
 
   # The path to the Berksfile to use with Vagrant Berkshelf
   # config.berkshelf.berksfile_path = "./Berksfile"
@@ -39,34 +74,16 @@ Vagrant.configure("2") do |config|
   # config.berkshelf.except = []
 
   config.vm.provision :chef_solo do |chef|
-    chef.json.merge!({
-      :apache => {
-        :sites_path           => "/var/www",
-        :server_port          => "8887",
-        :listen_ports         => ["8887", "443"]
-      },
-      :percona => {
-        :env => 'dev'
-      },
-      :passwords => {
-        :root_password => '',
-        :myadmin_password => '',
-        :debian_password => '',
-        :server_repl_password => ''
+    chef.json = {
+      :mysql => {
+        :server_root_password => 'rootpass',
+        :server_debian_password => 'debpass',
+        :server_repl_password => 'replpass'
       }
-    })
+    }
 
-    chef.add_recipe "b9apache::default"
-    chef.add_recipe "b9apache::vagrant"
-    chef.add_recipe "b9php::default"
-    chef.add_recipe "b9php::pear"
-    chef.add_recipe "b9php::oracle"
-    chef.add_recipe "b9ruby::default"
-    chef.add_recipe "b9mysql::default"
-    chef.add_recipe "b9npm::default"
-    chef.add_recipe "memcached"
-    chef.add_recipe "sqlite"
-    chef.add_recipe "postfix"
-    chef.add_recipe "b9base::default"
+    chef.run_list = [
+        "recipe[b9centos::default]"
+    ]
   end
 end
